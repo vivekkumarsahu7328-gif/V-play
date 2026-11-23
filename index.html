@@ -507,6 +507,16 @@ footer a{text-underline-offset:4px}
   };
   ownerUI();
   loadThread();setInterval(loadThread,5000);
+  // server se turant khabar: naya message/jawab aate hi bina refresh ke dikhe
+  (function(){var v="",f=0;
+    function w(){
+      if(document.hidden){setTimeout(w,1500);return}
+      var c=new AbortController(),t=setTimeout(function(){c.abort()},28000);
+      fetch(SERVER+"/api/watch?v="+encodeURIComponent(v),{cache:"no-store",signal:c.signal}).then(function(r){return r.json()}).then(function(j){clearTimeout(t);f=0;var ch=v&&j.v!==v;v=j.v;if(ch)loadThread();w()}).catch(function(){clearTimeout(t);f++;setTimeout(w,Math.min(5000,500*f))});
+    }
+    setTimeout(w,800);
+    document.addEventListener("visibilitychange",function(){if(!document.hidden)loadThread()});
+  })();
 })();
 </script>
 </body>
