@@ -166,6 +166,27 @@ footer a{text-underline-offset:4px}
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* ---------- message box + admin se jude blocks ---------- */
+.msgbox{margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.04);max-width:520px}
+.msgbox h3{font-family:var(--head);font-size:1.15rem;margin-bottom:4px}
+.msgbox p{font-size:.92rem;color:var(--smoke);margin-bottom:10px}
+.msgbox input,.msgbox textarea{width:100%;font:inherit;color:var(--ivory);background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;outline:none;resize:vertical}
+.msgbox textarea{min-height:76px}
+.msgbox input:focus,.msgbox textarea:focus{border-color:var(--gold)}
+.msgbox button{font:inherit;font-weight:700;color:#fff;border:0;border-radius:12px;padding:11px 22px;cursor:pointer;background:linear-gradient(135deg,var(--ember),var(--ember-2))}
+.msgbox button:disabled{opacity:.55}
+.msgbox .st{font-size:.9rem;margin-top:8px;color:var(--gold);min-height:1.2em}
+.thread{margin-top:12px;display:grid;gap:8px}
+.bub{padding:9px 12px;border-radius:12px;font-size:.95rem;white-space:pre-wrap;word-break:break-word}
+.bub.me{background:rgba(255,255,255,.08);justify-self:end;max-width:92%}
+.bub.rep{background:rgba(255,176,74,.16);border:1px solid rgba(255,176,74,.35);max-width:92%}
+.bub small{display:block;color:var(--smoke);font-size:.75rem;margin-bottom:2px}
+#extra .wrap{padding:36px 0}
+#extra .xb{margin-bottom:22px}
+#extra h3{font-family:var(--head);font-size:1.4rem;margin-bottom:6px}
+#extra p{color:var(--smoke);white-space:pre-wrap}
+#extra .xb img{border-radius:16px;margin-top:10px;max-height:520px;width:auto;max-width:100%}
 </style>
 </head>
 
@@ -204,6 +225,16 @@ footer a{text-underline-offset:4px}
         </div>
         <p class="meta">Version <b>2.2</b>, size <b>0.2 MB</b>, Android <b>5.0</b> ya usse upar. Phone aur <b>Android TV</b> dono ke liye alag APK hai.</p>
         <p id="notAndroid">Ye app Android phone aur Android TV ke liye hai. Apne Android phone ya TV par ye page kholkar download karo.</p>
+        <div class="msgbox" id="msgbox">
+          <h3>Kuch poochna hai? Message bhejo</h3>
+          <p>Apna sawal ya dikkat likho. Jawab yahin is page par dikhega.</p>
+          <input id="mname" type="text" maxlength="40" placeholder="Aapka naam (optional)" autocomplete="off">
+          <textarea id="mtext" maxlength="500" placeholder="Yahan likho..."></textarea>
+          <button id="msend" type="button">Bhejo</button>
+          <div class="st" id="mst"></div>
+          <div class="thread" id="mthread"></div>
+        </div>
+
       </div>
 
       <div class="hero-phone">
@@ -211,6 +242,8 @@ footer a{text-underline-offset:4px}
       </div>
     </div>
   </div>
+
+  <div id="extra"></div>
 
   <!-- ================= FEATURES ================= -->
   <section class="features" id="features">
@@ -391,6 +424,57 @@ footer a{text-underline-offset:4px}
   document.querySelectorAll('a[href$=".apk"]').forEach(function(a){
     a.addEventListener("click",function(e){e.preventDefault();window.location.href=a.getAttribute("href")+"?t="+Date.now()});
   });
+</script>
+
+<script>
+(function(){
+  var SERVER="https://vivek7328.tail7d8e8a.ts.net";
+  var $=function(i){return document.getElementById(i)};
+  var cid="";try{cid=localStorage.getItem("vp_cid")||"";if(!cid){cid=Date.now().toString(36)+Math.random().toString(36).slice(2,10);localStorage.setItem("vp_cid",cid)}}catch(e){cid=cid||("t"+Date.now())}
+  function post(path,obj){return fetch(SERVER+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(obj),keepalive:true}).then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(!r.ok)throw new Error(j.error||"Error");return j})})}
+  function esc(t){return String(t==null?"":t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  // visit + download ginti
+  try{post("/api/track",{e:"visit",cid:cid}).catch(function(){})}catch(e){}
+  document.querySelectorAll('a[href$=".apk"]').forEach(function(a){a.addEventListener("click",function(){try{post("/api/track",{e:/_TV\.apk/i.test(a.getAttribute("href"))?"tv":"apk",cid:cid}).catch(function(){})}catch(e){}},true)});
+  // admin se joda hua content
+  function renderSite(j){
+    var b=(j&&j.blocks)||[];if(!b.length)return;
+    var box=$("extra"),html="",shots=[];
+    b.forEach(function(x){
+      var u=x.url?SERVER+x.url:"";
+      if(x.type==="shot"&&u){shots.push(x);return}
+      html+='<div class="xb">'+(x.title?"<h3>"+esc(x.title)+"</h3>":"")+(x.text?"<p>"+esc(x.text)+"</p>":"")+(x.type==="img"&&u?'<img loading="lazy" alt="'+esc(x.title)+'" src="'+esc(u)+'">':"")+"</div>";
+    });
+    box.innerHTML=html?'<div class="wrap">'+html+"</div>":"";
+    if(shots.length){
+      var ph=document.querySelector(".ph-empty"),fig=ph&&ph.closest("figure"),par=fig&&fig.parentNode;
+      if(par){
+        shots.forEach(function(x,i){
+          var f=document.createElement("figure");f.className="shot";
+          f.innerHTML='<div class="phone"><div class="screen"><img alt="'+esc(x.title)+'" src="'+esc(SERVER+x.url)+'" style="width:100%;height:100%;object-fit:cover"></div></div><figcaption>'+esc(x.title||"")+"</figcaption>";
+          par.insertBefore(f,fig);
+        });
+        fig.remove();
+      }
+    }
+  }
+  try{renderSite(JSON.parse(localStorage.getItem("vp_site")||"null"))}catch(e){}
+  fetch(SERVER+"/api/site",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){try{localStorage.setItem("vp_site",JSON.stringify(j))}catch(e){}renderSite(j)}).catch(function(){});
+  // message box
+  function fmt(ts){try{return new Date(ts).toLocaleString()}catch(e){return ""}}
+  function loadThread(){
+    if(document.hidden)return;
+    fetch(SERVER+"/api/msg?cid="+encodeURIComponent(cid),{cache:"no-store"}).then(function(r){return r.json()}).then(function(l){
+      $("mthread").innerHTML=l.map(function(m){return '<div class="bub me"><small>Aap · '+fmt(m.ts)+"</small>"+esc(m.text)+"</div>"+(m.reply?'<div class="bub rep"><small>Vivek ka jawab · '+fmt(m.rts)+"</small>"+esc(m.reply)+"</div>":"")}).join("");
+    }).catch(function(){});
+  }
+  $("msend").onclick=function(){
+    var t=$("mtext").value.trim();if(!t){$("mst").textContent="Pehle kuch likho.";return}
+    $("msend").disabled=true;$("mst").textContent="Bhej raha hun...";
+    post("/api/msg",{cid:cid,name:$("mname").value,text:t}).then(function(){$("mtext").value="";$("mst").textContent="Message bhej diya. Jawab aate hi yahin dikhega.";loadThread()}).catch(function(e){$("mst").textContent=(e&&e.message&&e.message!=="Failed to fetch")?e.message:"Abhi server band hai, thodi der baad try karo."}).then(function(){$("msend").disabled=false});
+  };
+  loadThread();setInterval(loadThread,5000);
+})();
 </script>
 </body>
 </html>
