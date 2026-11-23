@@ -179,7 +179,7 @@ footer a{text-underline-offset:4px}
 .msgbox .st{font-size:.9rem;margin-top:8px;color:var(--gold);min-height:1.2em}
 .thread{margin-top:12px;display:grid;gap:8px}
 .bub{padding:9px 12px;border-radius:12px;font-size:.95rem;white-space:pre-wrap;word-break:break-word}
-.bub.me{background:rgba(255,255,255,.08);justify-self:end;max-width:92%}
+.bub.me{background:rgba(255,255,255,.08);justify-self:end;max-width:92%}.bub.oth{background:rgba(255,255,255,.05);max-width:92%}.thread{max-height:420px;overflow:auto}
 .bub.rep{background:rgba(255,176,74,.16);border:1px solid rgba(255,176,74,.35);max-width:92%}
 .bub small{display:block;color:var(--smoke);font-size:.75rem;margin-bottom:2px}
 #extra .wrap{padding:36px 0}
@@ -226,8 +226,8 @@ footer a{text-underline-offset:4px}
         <p class="meta">Version <b>2.2</b>, size <b>0.2 MB</b>, Android <b>5.0</b> ya usse upar. Phone aur <b>Android TV</b> dono ke liye alag APK hai.</p>
         <p id="notAndroid">Ye app Android phone aur Android TV ke liye hai. Apne Android phone ya TV par ye page kholkar download karo.</p>
         <div class="msgbox" id="msgbox">
-          <h3>Kuch poochna hai? Message bhejo</h3>
-          <p>Apna sawal ya dikkat likho. Jawab yahin is page par dikhega.</p>
+          <h3>Sawal ya dikkat? Yahan likho</h3>
+          <p>Sab ke message yahin dikhte hain. Aap sirf apna message hata sakte ho. Jawab bhi yahin aayega.</p>
           <input id="mname" type="text" maxlength="40" placeholder="Aapka naam (optional)" autocomplete="off">
           <textarea id="mtext" maxlength="500" placeholder="Yahan likho..."></textarea>
           <button id="msend" type="button">Bhejo</button>
@@ -443,7 +443,7 @@ footer a{text-underline-offset:4px}
     b.forEach(function(x){
       var u=x.url?SERVER+x.url:"";
       if(x.type==="shot"&&u){shots.push(x);return}
-      html+='<div class="xb">'+(x.title?"<h3>"+esc(x.title)+"</h3>":"")+(x.text?"<p>"+esc(x.text)+"</p>":"")+(x.type==="img"&&u?'<img loading="lazy" alt="'+esc(x.title)+'" src="'+esc(u)+'">':"")+"</div>";
+      html+='<div class="xb">'+(x.title?"<h3>"+esc(x.title)+"</h3>":"")+(x.text?"<p>"+esc(x.text)+"</p>":"")+(x.type==="img"&&u?'<img loading="lazy" alt="'+esc(x.title)+'" src="'+esc(u)+'">':"")+(x.type==="vid"&&u?'<video controls playsinline preload="metadata" style="margin-top:10px;border-radius:16px;max-width:100%;max-height:520px" src="'+esc(u)+'"></video>':"")+"</div>";
     });
     box.innerHTML=html?'<div class="wrap">'+html+"</div>":"";
     if(shots.length){
@@ -462,16 +462,19 @@ footer a{text-underline-offset:4px}
   fetch(SERVER+"/api/site",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){try{localStorage.setItem("vp_site",JSON.stringify(j))}catch(e){}renderSite(j)}).catch(function(){});
   // message box
   function fmt(ts){try{return new Date(ts).toLocaleString()}catch(e){return ""}}
+  var lastSig="";
   function loadThread(){
     if(document.hidden)return;
     fetch(SERVER+"/api/msg?cid="+encodeURIComponent(cid),{cache:"no-store"}).then(function(r){return r.json()}).then(function(l){
-      $("mthread").innerHTML=l.map(function(m){return '<div class="bub me"><small>Aap · '+fmt(m.ts)+"</small>"+esc(m.text)+"</div>"+(m.reply?'<div class="bub rep"><small>Vivek ka jawab · '+fmt(m.rts)+"</small>"+esc(m.reply)+"</div>":"")}).join("");
+      var sig=JSON.stringify(l);if(sig===lastSig)return;lastSig=sig;
+      $("mthread").innerHTML=l.map(function(m){return '<div class="bub '+(m.mine?"me":"oth")+'"><small>'+esc(m.mine?"Aap":m.name)+" · "+fmt(m.ts)+(m.mine?' · <a href="#" data-del="'+esc(m.id)+'" style="color:var(--gold)">Hatao</a>':"")+"</small>"+esc(m.text)+"</div>"+(m.reply?'<div class="bub rep"><small>Vivek ka jawab · '+fmt(m.rts)+"</small>"+esc(m.reply)+"</div>":"")}).join("");
+      $("mthread").querySelectorAll("[data-del]").forEach(function(a){a.onclick=function(e){e.preventDefault();if(!confirm("Apna message hatana hai?"))return;post("/api/msg/del",{id:a.getAttribute("data-del"),cid:cid}).then(function(){lastSig="";loadThread()}).catch(function(x){alert(x.message||"Nahi hata")})}});
     }).catch(function(){});
   }
   $("msend").onclick=function(){
     var t=$("mtext").value.trim();if(!t){$("mst").textContent="Pehle kuch likho.";return}
     $("msend").disabled=true;$("mst").textContent="Bhej raha hun...";
-    post("/api/msg",{cid:cid,name:$("mname").value,text:t}).then(function(){$("mtext").value="";$("mst").textContent="Message bhej diya. Jawab aate hi yahin dikhega.";loadThread()}).catch(function(e){$("mst").textContent=(e&&e.message&&e.message!=="Failed to fetch")?e.message:"Abhi server band hai, thodi der baad try karo."}).then(function(){$("msend").disabled=false});
+    post("/api/msg",{cid:cid,name:$("mname").value,text:t}).then(function(){$("mtext").value="";$("mst").textContent="Message bhej diya. Jawab aate hi yahin dikhega.";lastSig="";loadThread()}).catch(function(e){$("mst").textContent=(e&&e.message&&e.message!=="Failed to fetch")?e.message:"Abhi server band hai, thodi der baad try karo."}).then(function(){$("msend").disabled=false});
   };
   loadThread();setInterval(loadThread,5000);
 })();
