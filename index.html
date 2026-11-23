@@ -179,7 +179,7 @@ footer a{text-underline-offset:4px}
 .msgbox .st{font-size:.9rem;margin-top:8px;color:var(--gold);min-height:1.2em}
 .thread{margin-top:12px;display:grid;gap:8px}
 .bub{padding:9px 12px;border-radius:12px;font-size:.95rem;white-space:pre-wrap;word-break:break-word}
-.bub.me{background:rgba(255,255,255,.08);justify-self:end;max-width:92%}.bub.oth{background:rgba(255,255,255,.05);max-width:92%}.thread{max-height:420px;overflow:auto}
+.bub.me{background:rgba(255,255,255,.08);justify-self:end;max-width:92%}.bub.own{background:rgba(255,77,31,.18);border:1px solid rgba(255,77,31,.45);max-width:92%}.bub .acts{margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}.bub .acts a{color:var(--gold);font-size:.85rem}.bub .rbox{margin-top:6px;display:flex;gap:6px}.bub .rbox input{margin:0;flex:1}.bub .rbox button{padding:8px 14px}.ownerbar{font-size:.85rem;color:var(--gold);margin-bottom:8px}.bub.oth{background:rgba(255,255,255,.05);max-width:92%}.thread{max-height:420px;overflow:auto}
 .bub.rep{background:rgba(255,176,74,.16);border:1px solid rgba(255,176,74,.35);max-width:92%}
 .bub small{display:block;color:var(--smoke);font-size:.75rem;margin-bottom:2px}
 #extra .wrap{padding:36px 0}
@@ -232,7 +232,9 @@ footer a{text-underline-offset:4px}
           <textarea id="mtext" maxlength="500" placeholder="Yahan likho..."></textarea>
           <button id="msend" type="button">Bhejo</button>
           <div class="st" id="mst"></div>
+          <div class="ownerbar" id="ownerbar" style="display:none"></div>
           <div class="thread" id="mthread"></div>
+          <div style="margin-top:10px"><a href="#" id="ownerlnk" style="font-size:.8rem;color:var(--smoke)">Owner login</a></div>
         </div>
 
       </div>
@@ -462,20 +464,48 @@ footer a{text-underline-offset:4px}
   fetch(SERVER+"/api/site",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){try{localStorage.setItem("vp_site",JSON.stringify(j))}catch(e){}renderSite(j)}).catch(function(){});
   // message box
   function fmt(ts){try{return new Date(ts).toLocaleString()}catch(e){return ""}}
-  var lastSig="";
+  var lastSig="",atok="";try{atok=localStorage.getItem("vp_atok")||""}catch(e){}
+  function apost(path,obj){return fetch(SERVER+path,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+atok},body:JSON.stringify(obj)}).then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(r.status===401){atok="";try{localStorage.removeItem("vp_atok")}catch(e){}ownerUI();throw new Error("Owner login dobara karo")}if(!r.ok)throw new Error(j.error||"Error");return j})})}
+  function ownerUI(){
+    $("ownerbar").style.display=atok?"block":"none";
+    $("ownerbar").innerHTML=atok?'Owner mode chalu hai &middot; <a href="#" id="ologout" style="color:var(--gold)">Logout</a>':"";
+    $("ownerlnk").style.display=atok?"none":"inline";
+    $("msend").textContent=atok?"Mera message bhejo":"Bhejo";
+    $("mname").style.display=atok?"none":"block";
+    var ol=$("ologout");if(ol)ol.onclick=function(e){e.preventDefault();atok="";try{localStorage.removeItem("vp_atok")}catch(x){}ownerUI();lastSig="";loadThread()};
+    lastSig="";
+  }
+  $("ownerlnk").onclick=function(e){e.preventDefault();var pw=prompt("Owner password:");if(!pw)return;
+    post("/api/login",{password:pw}).then(function(j){atok=j.token;try{localStorage.setItem("vp_atok",atok)}catch(x){}ownerUI();loadThread()}).catch(function(x){alert(x.message||"Galat password")})};
   function loadThread(){
     if(document.hidden)return;
+    if(document.activeElement&&document.activeElement.getAttribute&&document.activeElement.getAttribute("data-ri"))return;   // jawab likhte waqt refresh nahi
     fetch(SERVER+"/api/msg?cid="+encodeURIComponent(cid),{cache:"no-store"}).then(function(r){return r.json()}).then(function(l){
-      var sig=JSON.stringify(l);if(sig===lastSig)return;lastSig=sig;
-      $("mthread").innerHTML=l.map(function(m){return '<div class="bub '+(m.mine?"me":"oth")+'"><small>'+esc(m.mine?"Aap":m.name)+" · "+fmt(m.ts)+(m.mine?' · <a href="#" data-del="'+esc(m.id)+'" style="color:var(--gold)">Hatao</a>':"")+"</small>"+esc(m.text)+"</div>"+(m.reply?'<div class="bub rep"><small>Vivek ka jawab · '+fmt(m.rts)+"</small>"+esc(m.reply)+"</div>":"")}).join("");
-      $("mthread").querySelectorAll("[data-del]").forEach(function(a){a.onclick=function(e){e.preventDefault();if(!confirm("Apna message hatana hai?"))return;post("/api/msg/del",{id:a.getAttribute("data-del"),cid:cid}).then(function(){lastSig="";loadThread()}).catch(function(x){alert(x.message||"Nahi hata")})}});
+      var sig=JSON.stringify(l)+atok;if(sig===lastSig)return;lastSig=sig;
+      $("mthread").innerHTML=l.map(function(m){
+        var cls=m.owner?"own":(m.mine?"me":"oth"),who=m.owner?"Vivek (Owner)":(m.mine?"Aap":m.name);
+        var acts="";
+        if(atok){acts='<div class="acts"><a href="#" data-rp="'+esc(m.id)+'">'+(m.reply?"Jawab badlo":"Jawab do")+'</a>'+(m.reply?'<a href="#" data-rd="'+esc(m.id)+'">Jawab hatao</a>':"")+'<a href="#" data-ad="'+esc(m.id)+'">Message hatao</a></div><div data-rbox="'+esc(m.id)+'"></div>'}
+        else if(m.mine){acts='<div class="acts"><a href="#" data-del="'+esc(m.id)+'">Hatao</a></div>'}
+        return '<div class="bub '+cls+'"><small>'+esc(who)+" &middot; "+fmt(m.ts)+"</small>"+esc(m.text)+acts+"</div>"+(m.reply?'<div class="bub rep"><small>Vivek ka jawab &middot; '+fmt(m.rts)+"</small>"+esc(m.reply)+"</div>":"")}).join("");
+      var T=$("mthread");
+      T.querySelectorAll("[data-del]").forEach(function(a){a.onclick=function(e){e.preventDefault();if(!confirm("Apna message hatana hai?"))return;post("/api/msg/del",{id:a.getAttribute("data-del"),cid:cid}).then(function(){lastSig="";loadThread()}).catch(function(x){alert(x.message||"Nahi hata")})}});
+      T.querySelectorAll("[data-ad]").forEach(function(a){a.onclick=function(e){e.preventDefault();if(!confirm("Ye message hatana hai?"))return;apost("/api/msgs/del",{id:a.getAttribute("data-ad")}).then(function(){lastSig="";loadThread()}).catch(function(x){alert(x.message)})}});
+      T.querySelectorAll("[data-rd]").forEach(function(a){a.onclick=function(e){e.preventDefault();apost("/api/msgs/reply",{id:a.getAttribute("data-rd"),reply:""}).then(function(){lastSig="";loadThread()}).catch(function(x){alert(x.message)})}});
+      T.querySelectorAll("[data-rp]").forEach(function(a){a.onclick=function(e){e.preventDefault();var id=a.getAttribute("data-rp"),bx=T.querySelector('[data-rbox="'+id+'"]');
+        bx.innerHTML='<div class="rbox"><input data-ri="'+esc(id)+'" type="text" maxlength="1000" placeholder="Jawab likho..."><button type="button">Bhejo</button></div>';
+        var inp=bx.querySelector("input");inp.focus();
+        var go=function(){var t=inp.value.trim();if(!t)return;apost("/api/msgs/reply",{id:id,reply:t}).then(function(){lastSig="";inp.blur();loadThread()}).catch(function(x){alert(x.message)})};
+        bx.querySelector("button").onclick=go;inp.onkeydown=function(ev){if(ev.key==="Enter")go()}}});
     }).catch(function(){});
   }
   $("msend").onclick=function(){
     var t=$("mtext").value.trim();if(!t){$("mst").textContent="Pehle kuch likho.";return}
     $("msend").disabled=true;$("mst").textContent="Bhej raha hun...";
-    post("/api/msg",{cid:cid,name:$("mname").value,text:t}).then(function(){$("mtext").value="";$("mst").textContent="Message bhej diya. Jawab aate hi yahin dikhega.";lastSig="";loadThread()}).catch(function(e){$("mst").textContent=(e&&e.message&&e.message!=="Failed to fetch")?e.message:"Abhi server band hai, thodi der baad try karo."}).then(function(){$("msend").disabled=false});
+    var pr=atok?apost("/api/msgs/post",{text:t}):post("/api/msg",{cid:cid,name:$("mname").value,text:t});
+    pr.then(function(){$("mtext").value="";$("mst").textContent=atok?"Aapka message lag gaya.":"Message bhej diya. Jawab aate hi yahin dikhega.";lastSig="";loadThread()}).catch(function(e){$("mst").textContent=(e&&e.message&&e.message!=="Failed to fetch")?e.message:"Abhi server band hai, thodi der baad try karo."}).then(function(){$("msend").disabled=false});
   };
+  ownerUI();
   loadThread();setInterval(loadThread,5000);
 })();
 </script>
