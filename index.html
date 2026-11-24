@@ -440,8 +440,8 @@ footer a{text-underline-offset:4px}
   function post(path,obj){return fetch(SERVER+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(obj),keepalive:true}).then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(!r.ok)throw new Error(j.error||"Error");return j})})}
   function esc(t){return String(t==null?"":t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
   // visit + download ginti
-  try{post("/api/track",{e:"visit",cid:cid}).catch(function(){})}catch(e){}
-  document.querySelectorAll('a[href$=".apk"]').forEach(function(a){a.addEventListener("click",function(){try{post("/api/track",{e:/_TV\.apk/i.test(a.getAttribute("href"))?"tv":"apk",cid:cid}).catch(function(){})}catch(e){}},true)});
+  try{post("/api/track",{e:"visit",cid:cid,name:devName()}).catch(function(){})}catch(e){}
+  document.querySelectorAll('a[href$=".apk"]').forEach(function(a){a.addEventListener("click",function(){try{post("/api/track",{e:/_TV\.apk/i.test(a.getAttribute("href"))?"tv":"apk",cid:cid,name:devName()}).catch(function(){})}catch(e){}},true)});
   // admin se joda hua content
   function renderSite(j){
     var b=(j&&j.blocks)||[];if(!b.length)return;
@@ -464,6 +464,27 @@ footer a{text-underline-offset:4px}
       }
     }
   }
+
+  // tyohar theme
+  function applyTheme(t){
+    var R=document.documentElement.style,on=t&&t.id&&t.id!=="default";
+    var old=document.getElementById("thb"),of=document.getElementById("thf");if(old)old.remove();if(of)of.remove();
+    ["--ember","--ember-2","--wine","--wine-2","--gold"].forEach(function(k){R.removeProperty(k)});
+    if(!on)return;
+    function sh(h,a){var n=parseInt(h.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,m=function(x){return Math.max(0,Math.min(255,Math.round(x+a)))};return "#"+((1<<24)+(m(r)<<16)+(m(g)<<8)+m(b)).toString(16).slice(1)}
+    var ac=t.accent||"#ff4d1f",bg=t.bg||"#22060b";
+    R.setProperty("--ember",ac);R.setProperty("--ember-2",sh(ac,-35));R.setProperty("--wine",bg);R.setProperty("--wine-2",sh(bg,22));R.setProperty("--gold",sh(ac,40));
+    var b=document.createElement("div");b.id="thb";b.textContent=((t.emoji||"")+" "+(t.greet||"")).trim();
+    b.style.cssText="position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:60;max-width:92vw;padding:8px 18px;border-radius:99px;background:"+ac+";color:#fff;font:700 15px/1.2 system-ui,sans-serif;box-shadow:0 6px 22px #0007;pointer-events:none;text-align:center";
+    if(t.greet||t.emoji)document.body.appendChild(b);
+    if(t.fall!==false&&t.emoji){
+      if(!document.getElementById("thcss")){var c=document.createElement("style");c.id="thcss";c.textContent="#thf{position:fixed;inset:0;z-index:59;pointer-events:none;overflow:hidden}#thf i{position:absolute;top:-40px;font-style:normal;animation:thfall linear infinite}@keyframes thfall{to{transform:translateY(112vh) rotate(360deg)}}";document.head.appendChild(c)}
+      var f=document.createElement("div");f.id="thf";var h="";for(var i=0;i<16;i++)h+='<i style="left:'+Math.round(Math.random()*96)+'%;font-size:'+(20+Math.round(Math.random()*18))+'px;animation-duration:'+(7+Math.random()*7).toFixed(1)+'s;animation-delay:-'+(Math.random()*12).toFixed(1)+'s">'+t.emoji+'</i>';f.innerHTML=h;document.body.appendChild(f);
+    }
+  }
+  function themeWatch(){fetch(SERVER+"/api/site",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){var k=JSON.stringify(j&&j.theme||null);if(k!==window.__thk){window.__thk=k;applyTheme(j&&j.theme)}}).catch(function(){})}
+  try{var _s=JSON.parse(localStorage.getItem("vp_site")||"null");if(_s&&_s.theme){window.__thk=JSON.stringify(_s.theme);applyTheme(_s.theme)}}catch(e){}
+  themeWatch();setInterval(themeWatch,15000);
   try{renderSite(JSON.parse(localStorage.getItem("vp_site")||"null"))}catch(e){}
   fetch(SERVER+"/api/site",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){try{localStorage.setItem("vp_site",JSON.stringify(j))}catch(e){}renderSite(j)}).catch(function(){});
   // message box
