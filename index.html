@@ -168,20 +168,24 @@ footer a{text-underline-offset:4px}
 }
 
 /* ---------- message box + admin se jude blocks ---------- */
-.msgbox{margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.04);max-width:520px}
+.msgbox{margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.04);max-width:620px}
 .msgbox h3{font-family:var(--head);font-size:1.15rem;margin-bottom:4px}
 .msgbox p{font-size:.92rem;color:var(--smoke);margin-bottom:10px}
-.msgbox input,.msgbox textarea{width:100%;font:inherit;color:var(--ivory);background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;outline:none;resize:vertical}
+.msgbox input,.msgbox textarea{width:100%;font:inherit;font-size:1.15rem;color:var(--ivory);background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;outline:none;resize:vertical}
 .msgbox textarea{min-height:76px}
 .msgbox input:focus,.msgbox textarea:focus{border-color:var(--gold)}
 .msgbox button{font:inherit;font-weight:700;color:#fff;border:0;border-radius:12px;padding:11px 22px;cursor:pointer;background:linear-gradient(135deg,var(--ember),var(--ember-2))}
 .msgbox button:disabled{opacity:.55}
 .msgbox .st{font-size:.9rem;margin-top:8px;color:var(--gold);min-height:1.2em}
 .thread{margin-top:12px;display:grid;gap:8px}
-.bub{padding:9px 12px;border-radius:12px;font-size:.95rem;white-space:pre-wrap;word-break:break-word}
-.bub.me{background:rgba(255,255,255,.08);justify-self:end;max-width:92%}.bub.own{background:rgba(255,77,31,.18);border:1px solid rgba(255,77,31,.45);max-width:92%}.bub .acts{margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}.bub .acts a{color:var(--gold);font-size:.85rem}.bub .rbox{margin-top:6px;display:flex;gap:6px}.bub .rbox input{margin:0;flex:1}.bub .rbox button{padding:8px 14px}.ownerbar{font-size:.85rem;color:var(--gold);margin-bottom:8px}.bub.oth{background:rgba(255,255,255,.05);max-width:92%}.thread{max-height:420px;overflow:auto}
-.bub.rep{background:rgba(255,176,74,.16);border:1px solid rgba(255,176,74,.35);max-width:92%}
-.bub small{display:block;color:var(--smoke);font-size:.75rem;margin-bottom:2px}
+.bub{padding:12px 15px;border-radius:14px;font-size:1.2rem;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.bub.me{background:rgba(255,255,255,.08);justify-self:end;max-width:92%}.bub.own,.bub.rep{position:relative;max-width:96%;padding:12px 14px 12px;border:0;border-radius:16px;color:#fff;background:linear-gradient(135deg,#7c3aed 0%,#db2777 52%,#f59e0b 100%);box-shadow:0 8px 24px rgba(219,39,119,.35),inset 0 0 0 1px rgba(255,255,255,.28)}
+.bub.own small,.bub.rep small{color:#fff;opacity:.95;font-weight:700;letter-spacing:.02em}
+.bub.own small:before,.bub.rep small:before{content:"\1F451  ";}
+.bub.own small:after,.bub.rep small:after{content:"OWNER";margin-left:8px;font-size:.62rem;padding:2px 7px;border-radius:99px;background:rgba(255,255,255,.25);vertical-align:middle}
+.bub.own .acts a{color:#fff;text-decoration:underline}.bub .acts{margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}.bub .acts a{color:var(--gold);font-size:.95rem}.bub .rbox{margin-top:6px;display:flex;gap:6px}.bub .rbox input{margin:0;flex:1}.bub .rbox button{padding:8px 14px}.ownerbar{font-size:.85rem;color:var(--gold);margin-bottom:8px}.bub.oth{background:rgba(255,255,255,.05);max-width:92%}.thread{max-height:560px;overflow:auto}
+.bub.rep{max-width:96%;margin-left:14px}
+.bub small{display:block;color:var(--smoke);font-size:.85rem;margin-bottom:4px}
 #extra .wrap{padding:36px 0}
 #extra .xb{margin-bottom:22px}
 #extra h3{font-family:var(--head);font-size:1.4rem;margin-bottom:6px}
@@ -329,6 +333,26 @@ footer a{text-underline-offset:4px}
     </div>
   </section>
 
+  <!-- ================= iPHONE ================= -->
+  <section class="tvsec" id="ios">
+    <div class="wrap">
+      <h2>iPhone (iOS) ke liye</h2>
+      <p class="sub">iPhone par APK nahi chalti. Isliye iPhone ke liye web-app hai: Safari mein kholo, Home Screen par jodo, aur ye bilkul app ki tarah full screen khulega. App Store se install nahi hota.</p>
+      <div class="cta-row">
+        <a class="btn" href="ios/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5"/><path d="M4 20h16"/></svg>
+          iPhone par kholo
+        </a>
+      </div>
+      <ol class="tvsteps">
+        <li>Ye button <b>Safari</b> mein kholo (Chrome nahi).</li>
+        <li>Neeche <b>Share</b> (upar-teer wala button) dabao.</li>
+        <li><b>Add to Home Screen</b> chuno, phir <b>Add</b>.</li>
+        <li>Home Screen par VPlay ka icon aayega. Wahin se kholo.</li>
+      </ol>
+    </div>
+  </section>
+
   <!-- ================= INSTALL ================= -->
   <section class="steps" id="install">
     <div class="wrap">
@@ -464,6 +488,14 @@ footer a{text-underline-offset:4px}
   fetch(SERVER+"/api/site",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){try{localStorage.setItem("vp_site",JSON.stringify(j))}catch(e){}renderSite(j)}).catch(function(){});
   // message box
   function fmt(ts){try{return new Date(ts).toLocaleString()}catch(e){return ""}}
+  // phone ka naam apne aap: browser asli naam nahi batata, isliye phone ka model (jaise "Redmi Note 12") use hota hai
+  function devName(){
+    var ua=navigator.userAgent||"",m=ua.match(/Android[^;)]*;\s*([^;)]+?)(?:\s+Build|\s*\)|;)/),n="";
+    if(m&&m[1]&&!/^(K|Android|Mobile|wv|U|en-?[a-z]*)$/i.test(m[1].trim()))n=m[1].trim();
+    else if(/iPhone/.test(ua))n="iPhone";else if(/iPad/.test(ua))n="iPad";else if(/Android/.test(ua))n=/Mobile/.test(ua)?"Android phone":"Android tablet";
+    else if(/Windows/.test(ua))n="Windows PC";else if(/Mac OS X/.test(ua))n="Mac";else if(/Linux/.test(ua))n="Linux PC";else n="Visitor";
+    return (n+" #"+cid.slice(-3)).slice(0,40);
+  }
   var lastSig="",atok="";try{atok=localStorage.getItem("vp_atok")||""}catch(e){}
   function apost(path,obj){return fetch(SERVER+path,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+atok},body:JSON.stringify(obj)}).then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(r.status===401){atok="";try{localStorage.removeItem("vp_atok")}catch(e){}ownerUI();throw new Error("Owner login dobara karo")}if(!r.ok)throw new Error(j.error||"Error");return j})})}
   function ownerUI(){
@@ -502,9 +534,10 @@ footer a{text-underline-offset:4px}
   $("msend").onclick=function(){
     var t=$("mtext").value.trim();if(!t){$("mst").textContent="Pehle kuch likho.";return}
     $("msend").disabled=true;$("mst").textContent="Bhej raha hun...";
-    var pr=atok?apost("/api/msgs/post",{text:t}):post("/api/msg",{cid:cid,name:$("mname").value,text:t});
+    var pr=atok?apost("/api/msgs/post",{text:t}):(function(){var nm=($("mname").value||"").trim();try{if(nm)localStorage.setItem("vp_name",nm)}catch(e){}return post("/api/msg",{cid:cid,name:nm||devName(),text:t})})();
     pr.then(function(){$("mtext").value="";$("mst").textContent=atok?"Aapka message lag gaya.":"Message bhej diya. Jawab aate hi yahin dikhega.";lastSig="";loadThread()}).catch(function(e){$("mst").textContent=(e&&e.message&&e.message!=="Failed to fetch")?e.message:"Abhi server band hai, thodi der baad try karo."}).then(function(){$("msend").disabled=false});
   };
+  try{$("mname").value=localStorage.getItem("vp_name")||""}catch(e){}
   ownerUI();
   loadThread();setInterval(loadThread,5000);
   // server se turant khabar: naya message/jawab aate hi bina refresh ke dikhe
